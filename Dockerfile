@@ -76,7 +76,7 @@ COPY fix-permissions /usr/local/bin/fix-permissions
 ## Set a default user. Available via runtime flag `--user docker`
 ## User should also have & own a home directory (e.g. for linked volumes to work properly).
 RUN useradd --create-home --uid ${CT_UID} --gid ${CT_GID} --shell ${SHELL} \
-    --groups sudo ${CT_USER} \
+    ${CT_USER} \
     && chmod 0755 /usr/local/bin/fix-permissions
 
 ENV HOME=/home/${CT_USER}
