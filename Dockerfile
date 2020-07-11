@@ -95,6 +95,7 @@ RUN /opt/conda/bin/conda update -n base -c defaults conda \
 RUN /opt/conda/bin/conda install conda-build --yes \
     && /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE} \
     && /opt/conda/bin/conda build purge-all \
+    && /opt/conda/bin/conda clean -atipsy \
     && rm ${CONDA_ENV_FILE} \
     && fix-permissions ${HOME}
 

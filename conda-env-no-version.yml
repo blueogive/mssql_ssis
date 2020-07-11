@@ -50,6 +50,7 @@ dependencies:
   - ncurses
   - openssl
   - packaging
+  - pandas
   - patchelf
   - pip
   - pkginfo
