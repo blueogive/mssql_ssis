@@ -23,6 +23,7 @@ RUN apt-get update --fix-missing \
         gosu \
         locales \
         make \
+        patch \
         software-properties-common \
         wget \
         unzip \
@@ -104,6 +105,19 @@ RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> ${HOME}/.bashrc && \
     echo "export PATH=${HOME}/.local/bin:${PATH}" >> ${HOME}/.bashrc && \
     mkdir ${HOME}/work
 SHELL [ "/bin/bash", "--login", "-c"]
+ARG PIP_REQ_FILE=${PIP_REQ_FILE}
+COPY ${PIP_REQ_FILE} ${PIP_REQ_FILE}
+RUN source ${HOME}/.bashrc \
+    && conda activate base \
+    && pip install --user --no-cache-dir --disable-pip-version-check \
+      -r ${PIP_REQ_FILE} \
+    && rm ${PIP_REQ_FILE} \
+    && mkdir -p .config/pip \
+    && fix-permissions ${HOME}/work \
+    && rm -rf ${HOME}/.cache/pip/*
+COPY pip.conf ${HOME}/.config/pip/pip.conf
+RUN fix-permissions ${HOME}/.config/pip
+WORKDIR ${HOME}/work
 
 RUN source ${HOME}/.bashrc \
     && conda activate base
@@ -131,5 +145,8 @@ COPY ssisconfhelper.py /opt/ssis/lib/ssis-conf/
 ENV SSIS_PID=Developer \
     ACCEPT_EULA=Y
 WORKDIR ${HOME}/work
-RUN /opt/ssis/bin/ssis-conf -n setup
+COPY sqlalchemy_dataset.patch ${HOME}/work
+RUN /opt/ssis/bin/ssis-conf -n setup && \
+    patch ${HOME}/.local/lib/python3.7/site-packages/great_expectations/dataset/sqlalchemy_dataset.py sqlalchemy_dataset.patch && \
+    rm sqlalchemy_dataset.patch
 CMD [ "/bin/bash" ]

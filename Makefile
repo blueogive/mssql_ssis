@@ -5,6 +5,7 @@
 CONDA_ENV_FILE := conda-env.yml
 # CONDA_ENV_FILE := conda-env-no-version.yml
 PIP_REQ_FILE := pip-req.txt
+# PIP_REQ_FILE := pip-req-no-version.txt
 IMG_NAME := mssql_ssis
 VCS_URL := $(shell git remote get-url --push gh)
 VCS_REF := $(shell git rev-parse --short HEAD)
@@ -36,6 +37,7 @@ az-build: Dockerfile conda-env*.yml pip-req.txt pip.conf fix-permissions
 docker-build: Dockerfile conda-env*.yml fix-permissions ssisconfhelper.py
 	@docker build \
 	--build-arg CONDA_ENV_FILE=$(CONDA_ENV_FILE) \
+	--build-arg PIP_REQ_FILE=$(PIP_REQ_FILE) \
 	--build-arg VCS_URL=$(VCS_URL) \
 	--build-arg VCS_REF=$(VCS_REF) \
 	--build-arg BUILD_DATE=$(BUILD_DATE) \
