@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-FROM ubuntu:bionic-20191202
+FROM ubuntu:bionic-20200713
 
 USER root
 
@@ -32,6 +32,21 @@ RUN apt-get update --fix-missing \
     && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && dpkg-reconfigure --frontend=noninteractive locales \
     && update-locale LANG=en_US.UTF-8
+
+## Install Oracle Instant Client, tools
+RUN mkdir /opt/oracle
+WORKDIR /opt/oracle
+RUN curl -o instantclient-basiclite-linux.x64-19.8.0.0.0dbru.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/19800/instantclient-basiclite-linux.x64-19.8.0.0.0dbru.zip \
+    && curl -o instantclient-sqlplus-linux.x64-19.8.0.0.0dbru.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/19800/instantclient-sqlplus-linux.x64-19.8.0.0.0dbru.zip \
+    && curl -o instantclient-sdk-linux.x64-19.8.0.0.0dbru.zip \
+    https://download.oracle.com/otn_software/linux/instantclient/19800/instantclient-sdk-linux.x64-19.8.0.0.0dbru.zip \
+    && unzip -oq 'instantclient-*.zip' \
+    && echo /opt/oracle/instantclient_19_8 > \
+        /etc/ld.so.conf.d/oracle-instantclient \
+    && rm instantclient-*.zip \
+    && ldconfig
 
 ## Install Microsoft and Postgres ODBC drivers and SQL commandline tools
 RUN curl -o microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
@@ -63,9 +78,9 @@ ENV LC_ALL=en_US.UTF-8 \
     CONDA_DIR=/opt/conda
 
 RUN wget --quiet \
-    https://repo.anaconda.com/miniconda/Miniconda3-4.7.12.1-Linux-x86_64.sh \
+    https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh \
     -O /root/miniconda.sh && \
-    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "81c773ff87af5cfac79ab862942ab6b3" ]; then \
+    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "751786b92c00b1aeae3f017b781018df" ]; then \
         /bin/bash /root/miniconda.sh -b -p /opt/conda; fi && \
     rm /root/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
@@ -145,8 +160,5 @@ COPY ssisconfhelper.py /opt/ssis/lib/ssis-conf/
 ENV SSIS_PID=Developer \
     ACCEPT_EULA=Y
 WORKDIR ${HOME}/work
-COPY sqlalchemy_dataset.patch ${HOME}/work
-RUN /opt/ssis/bin/ssis-conf -n setup && \
-    patch ${HOME}/.local/lib/python3.7/site-packages/great_expectations/dataset/sqlalchemy_dataset.py sqlalchemy_dataset.patch && \
-    rm sqlalchemy_dataset.patch
+RUN /opt/ssis/bin/ssis-conf -n setup 
 CMD [ "/bin/bash" ]

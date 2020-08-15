@@ -9,7 +9,8 @@ packages for Linux. The image also includes Microsoft's
 and a working Python 3.7 environment based on the
 [Miniconda](https://conda.io/miniconda.html)
 environment management system developed by
-[Anaconda, Inc](https://www.anaconda.com/).
+[Anaconda, Inc](https://www.anaconda.com/). Finally, the image includes the
+[Oracle Instant Client, SDK, and SQL*Plus tool](https://www.oracle.com/database/technologies/instant-client/linux-x86-64-downloads.html).
 
 
 ## Usage
