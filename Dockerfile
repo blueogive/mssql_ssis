@@ -77,15 +77,6 @@ ENV LC_ALL=en_US.UTF-8 \
     CT_FMODE=0775 \
     CONDA_DIR=/opt/conda
 
-RUN wget --quiet \
-    https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh \
-    -O /root/miniconda.sh && \
-    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "751786b92c00b1aeae3f017b781018df" ]; then \
-        /bin/bash /root/miniconda.sh -b -p /opt/conda; fi && \
-    rm /root/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipsy && \
-    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh
-
 # Add a script that we will use to correct permissions after running certain commands
 COPY fix-permissions /usr/local/bin/fix-permissions
 
@@ -97,8 +88,16 @@ RUN useradd --create-home --uid ${CT_UID} --gid ${CT_GID} --shell ${SHELL} \
 
 ENV HOME=/home/${CT_USER}
 
-RUN fix-permissions ${CONDA_DIR} \
-    && fix-permissions ${HOME}
+RUN wget --quiet \
+    https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh \
+    -O /root/miniconda.sh && \
+    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "751786b92c00b1aeae3f017b781018df" ]; then \
+        /bin/bash /root/miniconda.sh -b -p /opt/conda; fi && \
+    rm /root/miniconda.sh && \
+    /opt/conda/bin/conda clean -tipsy && \
+    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+    fix-permissions ${CONDA_DIR} && \
+    fix-permissions ${HOME}
 
 WORKDIR ${HOME}
 
@@ -106,9 +105,8 @@ ARG CONDA_ENV_FILE=${CONDA_ENV_FILE}
 COPY ${CONDA_ENV_FILE} ${CONDA_ENV_FILE}
 RUN /opt/conda/bin/conda update -n base -c defaults conda \
     && /opt/conda/bin/conda config --add channels conda-forge \
-    && /opt/conda/bin/conda config --set channel_priority strict
-
-RUN /opt/conda/bin/conda install conda-build --yes \
+    && /opt/conda/bin/conda config --set channel_priority strict \
+    && /opt/conda/bin/conda install conda-build --yes \
     && /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE} \
     && /opt/conda/bin/conda build purge-all \
     && /opt/conda/bin/conda clean -atipsy \
