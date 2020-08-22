@@ -13,14 +13,17 @@
 FROM ubuntu:bionic-20200713
 
 USER root
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update --fix-missing \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    && apt-get install -y \
         --no-install-recommends \
         ca-certificates \
         curl \
+        git \
         gnupg2 \
         gosu \
+        libaio1 \
         locales \
         make \
         patch \
@@ -40,14 +43,19 @@ RUN curl -o instantclient-basiclite-linux.x64-19.8.0.0.0dbru.zip \
     https://download.oracle.com/otn_software/linux/instantclient/19800/instantclient-basiclite-linux.x64-19.8.0.0.0dbru.zip \
     && curl -o instantclient-sqlplus-linux.x64-19.8.0.0.0dbru.zip \
     https://download.oracle.com/otn_software/linux/instantclient/19800/instantclient-sqlplus-linux.x64-19.8.0.0.0dbru.zip \
-    && curl -o instantclient-sdk-linux.x64-19.8.0.0.0dbru.zip \
-    https://download.oracle.com/otn_software/linux/instantclient/19800/instantclient-sdk-linux.x64-19.8.0.0.0dbru.zip \
     && unzip -oq 'instantclient-*.zip' \
+    && rm instantclient-*.zip
+
+WORKDIR /opt/oracle/instantclient_19_8
+RUN mkdir bin \
+    && mv sqlplus bin \
+    && mkdir -p sqlplus/admin \
+    && mv glogin.sql sqlplus/admin \
     && echo /opt/oracle/instantclient_19_8 > \
-        /etc/ld.so.conf.d/oracle-instantclient \
-    && rm instantclient-*.zip \
+        /etc/ld.so.conf.d/oracle-instantclient.conf \
     && ldconfig
 
+WORKDIR /root
 ## Install Microsoft and Postgres ODBC drivers and SQL commandline tools
 RUN curl -o microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
     && apt-key add microsoft.asc \
@@ -68,9 +76,10 @@ RUN curl -o microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
 ENV LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US.UTF-8 \
-    PATH=/opt/conda/bin:/opt/mssql-tools/bin:/opt/ssis/bin:${PATH} \
+    PATH=/opt/conda/bin:/opt/mssql-tools/bin:/opt/ssis/bin:/opt/oracle/instantclient_19_8/bin:${PATH} \
+    ORACLE_HOME=/opt/oracle/instantclient_19_8 \
+    NLS_LANG=AMERICAN_AMERICA.UTF8 \
     SHELL=/bin/bash \
-    DEBIAN_FRONTEND=noninteractive \
     CT_USER=docker \
     CT_UID=1000 \
     CT_GID=100 \
