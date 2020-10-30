@@ -18,6 +18,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update --fix-missing \
     && apt-get install -y \
         --no-install-recommends \
+        build-essential \
         ca-certificates \
         curl \
         git \
@@ -26,9 +27,9 @@ RUN apt-get update --fix-missing \
         libaio1 \
         locales \
         make \
-        patch \
         software-properties-common \
         wget \
+        unixodbc-dev \
         unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
@@ -112,15 +113,15 @@ WORKDIR ${HOME}
 
 ARG CONDA_ENV_FILE=${CONDA_ENV_FILE}
 COPY ${CONDA_ENV_FILE} ${CONDA_ENV_FILE}
-RUN /opt/conda/bin/conda update -n base -c defaults conda \
-    && /opt/conda/bin/conda config --add channels conda-forge \
-    && /opt/conda/bin/conda config --set channel_priority strict \
-    && /opt/conda/bin/conda install conda-build --yes \
-    && /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE} \
-    && /opt/conda/bin/conda build purge-all \
-    && /opt/conda/bin/conda clean -atipsy \
-    && rm ${CONDA_ENV_FILE} \
-    && fix-permissions ${HOME}
+RUN /opt/conda/bin/conda update -n base -c defaults conda
+RUN /opt/conda/bin/conda config --add channels conda-forge
+RUN /opt/conda/bin/conda config --set channel_priority strict
+# RUN /opt/conda/bin/conda install conda-build --yes
+# RUN /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE}
+# RUN /opt/conda/bin/conda build purge-all
+RUN /opt/conda/bin/conda clean -atipsy
+RUN rm ${CONDA_ENV_FILE}
+RUN fix-permissions ${HOME}
 
 RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> ${HOME}/.bashrc && \
     echo "conda activate base" >> ${HOME}/.bashrc && \
@@ -167,5 +168,5 @@ COPY ssisconfhelper.py /opt/ssis/lib/ssis-conf/
 ENV SSIS_PID=Developer \
     ACCEPT_EULA=Y
 WORKDIR ${HOME}/work
-RUN /opt/ssis/bin/ssis-conf -n setup 
+RUN /opt/ssis/bin/ssis-conf -n setup
 CMD [ "/bin/bash" ]

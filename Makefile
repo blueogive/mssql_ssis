@@ -14,6 +14,8 @@ TAG_DATE := $(shell date -u +"%Y%m%d")
 AZ_RG_ACR := rg-ore-infra
 AZ_ACR_NAME := acrore
 AZ_ACR_ZONE := ${AZ_ZONE}
+# Use BuildKit
+# export DOCKER_BUILDKIT := 1
 
 docker-prune :
 	@echo Pruning Docker images/containers/networks not in use
