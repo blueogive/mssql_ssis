@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 bcpy
+beautifulsoup4
 cx-Oracle
 great-expectations
 jellyfish
