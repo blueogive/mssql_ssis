@@ -12,4 +12,5 @@ pymssql
 pyodbc
 pytest
 python-dotenv
+sdv
 SQLAlchemy

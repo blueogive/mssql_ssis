@@ -94,6 +94,16 @@ COPY fix-permissions /usr/local/bin/fix-permissions
 ## User should also have & own a home directory (e.g. for linked volumes to work properly).
 RUN useradd --create-home --uid ${CT_UID} --gid ${CT_GID} --shell ${SHELL} \
     ${CT_USER} \
+    && useradd --no-create-home --uid 1001 --gid ${CT_GID} --shell ${SHELL} \
+            user_1001 \
+    && useradd --no-create-home --uid 1002 --gid ${CT_GID} --shell ${SHELL} \
+            user_1002 \
+    && useradd --no-create-home --uid 1003 --gid ${CT_GID} --shell ${SHELL} \
+            user_1003 \
+    && useradd --no-create-home --uid 1004 --gid ${CT_GID} --shell ${SHELL} \
+            user_1004 \
+    && useradd --no-create-home --uid 1005 --gid ${CT_GID} --shell ${SHELL} \
+            user_1005 \
     && chmod 0755 /usr/local/bin/fix-permissions
 
 ENV HOME=/home/${CT_USER}
@@ -168,5 +178,6 @@ COPY ssisconfhelper.py /opt/ssis/lib/ssis-conf/
 ENV SSIS_PID=Developer \
     ACCEPT_EULA=Y
 WORKDIR ${HOME}/work
-RUN /opt/ssis/bin/ssis-conf -n setup
+RUN /opt/ssis/bin/ssis-conf -n setup \
+    && chmod -R 0775 ${HOME}
 CMD [ "/bin/bash" ]

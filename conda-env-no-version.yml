@@ -8,33 +8,40 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - beautifulsoup4
-  - bzip2
+  - _libgcc_mutex
+  - brotlipy
   - ca-certificates
+  - certifi
+  - cffi
+  - chardet
   - conda
-  - conda-build
   - conda-package-handling
   - cryptography
-  - flake8
-  - glob2
-  - icu
-  - jinja2
-  - libxml2
-  - pandas
-  - patchelf
+  - idna
+  - ld_impl_linux-64
+  - libedit
+  - libffi
+  - libgcc-ng
+  - libstdcxx-ng
+  - ncurses
+  - openssl
   - pip
-  - pycodestyle
-  - pyodbc
-  - pytest
+  - pycosat
+  - pycparser
+  - pyopenssl
+  - pysocks
   - python
-  - python-dotenv
-  - pytz
-  - pyyaml
   - readline
   - requests
-  - sqlalchemy
+  - ruamel_yaml
+  - setuptools
+  - six
   - sqlite
-  - unixodbc
+  - tk
+  - tqdm
   - urllib3
+  - wheel
+  - xz
   - yaml
+  - zlib
 prefix: /opt/conda
