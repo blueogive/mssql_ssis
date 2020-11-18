@@ -9,33 +9,57 @@ channels:
   - defaults
 dependencies:
   - _libgcc_mutex
+  - _openmp_mutex
+  - beautifulsoup4
   - brotlipy
+  - bzip2
   - ca-certificates
   - certifi
   - cffi
   - chardet
   - conda
+  - conda-build
   - conda-package-handling
   - cryptography
+  - filelock
+  - glob2
+  - icu
   - idna
+  - jinja2
   - ld_impl_linux-64
+  - libarchive
   - libedit
   - libffi
   - libgcc-ng
+  - libgomp
+  - liblief
   - libstdcxx-ng
+  - libxml2
+  - lz4-c
+  - markupsafe
   - ncurses
   - openssl
+  - patchelf
   - pip
+  - pkginfo
+  - psutil
+  - py-lief
   - pycosat
   - pycparser
   - pyopenssl
   - pysocks
-  - python
+  - python=3.8.5=h7579374_1
+  - python-libarchive-c
+  - python_abi
+  - pytz
+  - pyyaml
   - readline
   - requests
+  - ripgrep
   - ruamel_yaml
   - setuptools
   - six
+  - soupsieve
   - sqlite
   - tk
   - tqdm
@@ -44,4 +68,5 @@ dependencies:
   - xz
   - yaml
   - zlib
+  - zstd
 prefix: /opt/conda

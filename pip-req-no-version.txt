@@ -7,10 +7,12 @@ jellyfish
 Jinja2
 lxml
 pandas
+pre-commit
+ptvsd
 pylint
 pymssql
 pyodbc
 pytest
 python-dotenv
-sdv
+sdv[ctgan]
 SQLAlchemy

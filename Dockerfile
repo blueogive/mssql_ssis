@@ -94,21 +94,12 @@ COPY fix-permissions /usr/local/bin/fix-permissions
 ## User should also have & own a home directory (e.g. for linked volumes to work properly).
 RUN useradd --create-home --uid ${CT_UID} --gid ${CT_GID} --shell ${SHELL} \
     ${CT_USER} \
-    && useradd --no-create-home --uid 1001 --gid ${CT_GID} --shell ${SHELL} \
-            user_1001 \
-    && useradd --no-create-home --uid 1002 --gid ${CT_GID} --shell ${SHELL} \
-            user_1002 \
-    && useradd --no-create-home --uid 1003 --gid ${CT_GID} --shell ${SHELL} \
-            user_1003 \
-    && useradd --no-create-home --uid 1004 --gid ${CT_GID} --shell ${SHELL} \
-            user_1004 \
-    && useradd --no-create-home --uid 1005 --gid ${CT_GID} --shell ${SHELL} \
-            user_1005 \
     && chmod 0755 /usr/local/bin/fix-permissions
 
 ENV HOME=/home/${CT_USER}
 
-RUN wget --quiet \
+RUN umask 0002 && \
+    wget --quiet \
     https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh \
     -O /root/miniconda.sh && \
     if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "751786b92c00b1aeae3f017b781018df" ]; then \
@@ -123,24 +114,32 @@ WORKDIR ${HOME}
 
 ARG CONDA_ENV_FILE=${CONDA_ENV_FILE}
 COPY ${CONDA_ENV_FILE} ${CONDA_ENV_FILE}
-RUN /opt/conda/bin/conda update -n base -c defaults conda
-RUN /opt/conda/bin/conda config --add channels conda-forge
-RUN /opt/conda/bin/conda config --set channel_priority strict
-# RUN /opt/conda/bin/conda install conda-build --yes
-# RUN /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE}
-# RUN /opt/conda/bin/conda build purge-all
-RUN /opt/conda/bin/conda clean -atipsy
-RUN rm ${CONDA_ENV_FILE}
-RUN fix-permissions ${HOME}
+RUN /opt/conda/bin/conda update -n base -c defaults conda \
+    && /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE} \
+    && /opt/conda/bin/conda install conda-build -y \
+    && /opt/conda/bin/conda build purge-all \
+    && /opt/conda/bin/conda config --add channels conda-forge \
+    && /opt/conda/bin/conda config --set channel_priority strict \
+    && /opt/conda/bin/conda clean -atipsy \
+    && rm ${CONDA_ENV_FILE} \
+    && fix-permissions ${HOME} \
+    && chown -R ${CT_USER}:${CT_GID} ${HOME}/.conda \
+    && chown -R ${CT_USER}:${CT_GID} ${HOME}/.condarc \
+    && rm -rf ${HOME}/.empty
 
-RUN echo ". /opt/conda/etc/profile.d/conda.sh" >> ${HOME}/.bashrc && \
+USER ${CT_USER}
+
+RUN umask 0002 && \
+    echo ". /opt/conda/etc/profile.d/conda.sh" >> ${HOME}/.bashrc && \
     echo "conda activate base" >> ${HOME}/.bashrc && \
     echo "export PATH=${HOME}/.local/bin:${PATH}" >> ${HOME}/.bashrc && \
-    mkdir ${HOME}/work
+    mkdir ${HOME}/work && \
+    chgrp ${CT_GID} ${HOME}/work
 SHELL [ "/bin/bash", "--login", "-c"]
 ARG PIP_REQ_FILE=${PIP_REQ_FILE}
 COPY ${PIP_REQ_FILE} ${PIP_REQ_FILE}
-RUN source ${HOME}/.bashrc \
+RUN umask 0002 \
+    && source ${HOME}/.bashrc \
     && conda activate base \
     && pip install --user --no-cache-dir --disable-pip-version-check \
       -r ${PIP_REQ_FILE} \
@@ -175,9 +174,18 @@ LABEL org.label-schema.license="https://opensource.org/licenses/MIT" \
 # not running within a Docker container, I modified the file to prevent it
 # from starting the telemetry service.
 COPY ssisconfhelper.py /opt/ssis/lib/ssis-conf/
+COPY docker-entrypoint /usr/local/bin
 ENV SSIS_PID=Developer \
     ACCEPT_EULA=Y
 WORKDIR ${HOME}/work
+
+USER root
+
 RUN /opt/ssis/bin/ssis-conf -n setup \
-    && chmod -R 0775 ${HOME}
+    && chmod 0755 /usr/local/bin/docker-entrypoint
+
+USER ${CT_USER}
+
+ENTRYPOINT [ "/usr/local/bin/docker-entrypoint" ]
+
 CMD [ "/bin/bash" ]
