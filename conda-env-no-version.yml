@@ -38,17 +38,24 @@ dependencies:
   - lz4-c
   - markupsafe
   - ncurses
+  - numpy
   - openssl
   - patchelf
+  - pandas
   - pip
   - pkginfo
   - psutil
   - py-lief
   - pycosat
   - pycparser
+  - pylint
+  - pymssql
+  - pyodbc
   - pyopenssl
   - pysocks
-  - python=3.8.5=h7579374_1
+  - pytest
+  - python=3.8.6=h852b56e_0_cpython
+  - python-dotenv
   - python-libarchive-c
   - python_abi
   - pytz
@@ -60,6 +67,7 @@ dependencies:
   - setuptools
   - six
   - soupsieve
+  - sqlalchemy
   - sqlite
   - tk
   - tqdm

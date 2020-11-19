@@ -27,6 +27,7 @@ RUN apt-get update --fix-missing \
         libaio1 \
         locales \
         make \
+        openssh-client \
         software-properties-common \
         wget \
         unixodbc-dev \
@@ -100,9 +101,9 @@ ENV HOME=/home/${CT_USER}
 
 RUN umask 0002 && \
     wget --quiet \
-    https://repo.anaconda.com/miniconda/Miniconda3-py37_4.8.3-Linux-x86_64.sh \
+    https://repo.anaconda.com/miniconda/Miniconda3-py38_4.8.3-Linux-x86_64.sh \
     -O /root/miniconda.sh && \
-    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "751786b92c00b1aeae3f017b781018df" ]; then \
+    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "d63adf39f2c220950a063e0529d4ff74" ]; then \
         /bin/bash /root/miniconda.sh -b -p /opt/conda; fi && \
     rm /root/miniconda.sh && \
     /opt/conda/bin/conda clean -tipsy && \
@@ -138,10 +139,13 @@ RUN umask 0002 && \
 SHELL [ "/bin/bash", "--login", "-c"]
 ARG PIP_REQ_FILE=${PIP_REQ_FILE}
 COPY ${PIP_REQ_FILE} ${PIP_REQ_FILE}
+
+USER root
+
 RUN umask 0002 \
     && source ${HOME}/.bashrc \
     && conda activate base \
-    && pip install --user --no-cache-dir --disable-pip-version-check \
+    && pip install --no-cache-dir --disable-pip-version-check \
       -r ${PIP_REQ_FILE} \
     && rm ${PIP_REQ_FILE} \
     && mkdir -p .config/pip \
@@ -178,8 +182,6 @@ COPY docker-entrypoint /usr/local/bin
 ENV SSIS_PID=Developer \
     ACCEPT_EULA=Y
 WORKDIR ${HOME}/work
-
-USER root
 
 RUN /opt/ssis/bin/ssis-conf -n setup \
     && chmod 0755 /usr/local/bin/docker-entrypoint
