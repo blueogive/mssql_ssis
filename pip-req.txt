@@ -1,6 +1,0 @@
-bcpy==0.1.8
-cx-Oracle==8.0.1
-great-expectations==0.12.9
-jellyfish==0.8.2
-pre-commit==2.8.2
-ptvsd==4.3.2

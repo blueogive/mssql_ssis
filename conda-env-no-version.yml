@@ -38,6 +38,7 @@ dependencies:
   - lz4-c
   - markupsafe
   - ncurses
+  - nodejs
   - numpy
   - openssl
   - patchelf
@@ -54,7 +55,7 @@ dependencies:
   - pyopenssl
   - pysocks
   - pytest
-  - python=3.8.6=h852b56e_0_cpython
+  - python
   - python-dotenv
   - python-libarchive-c
   - python_abi
@@ -77,4 +78,23 @@ dependencies:
   - yaml
   - zlib
   - zstd
+  - pip:
+    - bcpy
+    - beautifulsoup4
+    - black
+    - cx-Oracle
+    - flake8
+    - great-expectations
+    - jellyfish
+    - Jinja2
+    - lxml
+    - pandas
+    - pre-commit
+    - ptvsd
+    - pylint
+    - pymssql
+    - pyodbc
+    - pytest
+    - python-dotenv
+    - SQLAlchemy
 prefix: /opt/conda

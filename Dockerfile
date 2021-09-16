@@ -10,7 +10,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-FROM ubuntu:bionic-20200713
+FROM ubuntu:focal-20210723
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
@@ -62,7 +62,7 @@ WORKDIR /root
 RUN curl -o microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
     && apt-key add microsoft.asc \
     && rm microsoft.asc \
-    && curl https://packages.microsoft.com/config/ubuntu/18.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && curl https://packages.microsoft.com/config/ubuntu/20.04/prod.list > /etc/apt/sources.list.d/mssql-release.list \
     && add-apt-repository "$(curl https://packages.microsoft.com/config/ubuntu/18.04/mssql-server-2019.list)" \
     && apt-get update \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends \
@@ -101,31 +101,28 @@ ENV HOME=/home/${CT_USER}
 
 RUN umask 0002 && \
     wget --quiet \
-    https://repo.anaconda.com/miniconda/Miniconda3-py38_4.8.3-Linux-x86_64.sh \
-    -O /root/miniconda.sh && \
-    if [ "`md5sum /root/miniconda.sh | cut -d\  -f1`" = "d63adf39f2c220950a063e0529d4ff74" ]; then \
-        /bin/bash /root/miniconda.sh -b -p /opt/conda; fi && \
-    rm /root/miniconda.sh && \
-    /opt/conda/bin/conda clean -tipsy && \
+    https://github.com/conda-forge/miniforge/releases/download/4.10.3-5/Mambaforge-4.10.3-5-Linux-x86_64.sh \
+    -O /root/mambaforge.sh && \
+    if [ "`md5sum /root/mambaforge.sh | cut -d\  -f1`" = "2aff37852fa373bbf2ff897f757cf66f" ]; then \
+        /bin/bash /root/mambaforge.sh -b -p /opt/conda; fi && \
+    rm -f /root/mambaforge.sh ${HOME}/.wget-hsts && \
+    /opt/conda/bin/mamba clean -atipsy && \
     ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    fix-permissions ${CONDA_DIR} && \
-    fix-permissions ${HOME}
+    fix-permissions ${CONDA_DIR} \
+    && fix-permissions /home/${CT_USER}
 
 WORKDIR ${HOME}
 
 ARG CONDA_ENV_FILE=${CONDA_ENV_FILE}
 COPY ${CONDA_ENV_FILE} ${CONDA_ENV_FILE}
-RUN /opt/conda/bin/conda update -n base -c defaults conda \
-    && /opt/conda/bin/conda env update -n base --file ${CONDA_ENV_FILE} \
-    && /opt/conda/bin/conda install conda-build -y \
-    && /opt/conda/bin/conda build purge-all \
-    && /opt/conda/bin/conda config --add channels conda-forge \
-    && /opt/conda/bin/conda config --set channel_priority strict \
-    && /opt/conda/bin/conda clean -atipsy \
+RUN umask 0002 \
+    && /opt/conda/bin/mamba env update -n base --file ${CONDA_ENV_FILE} \
+    && /opt/conda/bin/mamba config --add channels conda-forge \
+    && /opt/conda/bin/mamba config --set channel_priority strict \
+    && /opt/conda/bin/mamba clean -atipy \
     && rm ${CONDA_ENV_FILE} \
     && fix-permissions ${HOME} \
     && chown -R ${CT_USER}:${CT_GID} ${HOME}/.conda \
-    && chown -R ${CT_USER}:${CT_GID} ${HOME}/.condarc \
     && rm -rf ${HOME}/.empty
 
 USER ${CT_USER}
@@ -137,17 +134,12 @@ RUN umask 0002 && \
     mkdir ${HOME}/work && \
     chgrp ${CT_GID} ${HOME}/work
 SHELL [ "/bin/bash", "--login", "-c"]
-ARG PIP_REQ_FILE=${PIP_REQ_FILE}
-COPY ${PIP_REQ_FILE} ${PIP_REQ_FILE}
 
 USER root
 
 RUN umask 0002 \
     && source ${HOME}/.bashrc \
     && conda activate base \
-    && pip install --no-cache-dir --disable-pip-version-check \
-      -r ${PIP_REQ_FILE} \
-    && rm ${PIP_REQ_FILE} \
     && mkdir -p .config/pip \
     && fix-permissions ${HOME}/work \
     && rm -rf ${HOME}/.cache/pip/*
@@ -158,6 +150,9 @@ WORKDIR ${HOME}/work
 RUN source ${HOME}/.bashrc \
     && conda activate base
 WORKDIR ${HOME}/work
+
+# Use NPM to install a T-SQL linter
+RUN npm install tsqllint -g
 
 ARG VCS_URL=${VCS_URL}
 ARG VCS_REF=${VCS_REF}
