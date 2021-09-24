@@ -10,7 +10,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-FROM ubuntu:focal-20210723
+# FROM ubuntu:focal-20210723
+FROM ubuntu:bionic-20210827
 
 USER root
 ENV DEBIAN_FRONTEND=noninteractive
@@ -68,7 +69,7 @@ RUN curl -o microsoft.asc https://packages.microsoft.com/keys/microsoft.asc \
     && ACCEPT_EULA=Y apt-get install -y --no-install-recommends \
         msodbcsql17 \
         mssql-tools \
-        mssql-server-is \
+        mssql-server-is=15.0.2000.5-4 \
         odbc-postgresql \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
